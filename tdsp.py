@@ -5,17 +5,18 @@ Created on Tue Mar  8 11:59:14 2022
 @author: yifei
 """
 
-from shapely.geometry import Point, LineString
-from geojson import Point, Feature, FeatureCollection, dump
+from shapely.geometry import LineString
+from geojson import Feature, FeatureCollection, dump
 from heapq_modified import *
 from State import State
+
+explored_states = 0
 
 
 class MyGraph(object):
     def __init__(self, nodes, edges):
         self.nodes = nodes
         self.edges = edges
-        self.visited = []
 
     def get_neighbouring_nodes(self, node_id):
         mask = (self.edges['node_start'] == node_id)
@@ -32,7 +33,7 @@ class MyGraph(object):
         return self.edges[mask].iloc[0]['weight']
 
     def get_accessible_states(self, current_state):
-
+        global explored_states
         node_id = current_state.get_node()
         timestep = current_state.get_timestep()
 
@@ -46,6 +47,7 @@ class MyGraph(object):
                     result.append(entry_finder[item][2])
                 else:
                     result.append(State.from_parent(item, current_state))
+                    explored_states += 1
         return result
 
     def is_accessible(self, item, timestep):
@@ -61,6 +63,7 @@ class MyGraph(object):
 def dijkstra(graph, start_vertex, end_vertex, start_time):
     visited = []  # explored states
     speed = 1000
+    global explored_states
 
     initial_state = State(start_vertex, start_time, 0, None, end_vertex)
     # hq = []
@@ -74,13 +77,13 @@ def dijkstra(graph, start_vertex, end_vertex, start_time):
         # print("current_state: {0}".format(current_state))
 
         if current_state.is_goal():
-            return current_state.extract_path()
+            return current_state.extract_path(), explored_states
 
-        visited.append(current_vertex)
+        visited.append(current_state)
         # print('current vertex: ', current_vertex)
         # print('neighbours: ', graph.getNeighbouringNodes(current_vertex))
         for neighbour in graph.get_accessible_states(current_state):
-            if neighbour.get_node() not in visited:
+            if neighbour not in visited:
                 # relax
                 # get distance between current_vertex and the neighbour
                 distance = graph.get_distance(current_vertex, neighbour.get_node())
@@ -96,12 +99,12 @@ def dijkstra(graph, start_vertex, end_vertex, start_time):
                     add_state(neighbour)
                     # print('Push',neighbour)
 
-    return None
+    return [], explored_states
 
 
-def extract_path(path2):
+def extract_path(path):
     result = []
-    for item in path2:
+    for item in path:
         result.append(item.get_node())
     return list(reversed(result))
 
@@ -152,6 +155,6 @@ def save_path(nodes, nodes_on_shortest_path, file_name):
 #
 # g2 = MyGraph(df3, df2)
 #
-# path = dijkstra(g2, 0, 8, 0)
+# path, number_of_states = dijkstra(g2, 0, 8, 0)
 #
-# print(extract_path(path))
+# print(extract_path(path), number_of_states)

@@ -4,18 +4,15 @@ Created on Tue Mar  1 15:49:32 2022
 
 @author: yifei
 """
+import datetime
 import sys
 
 import geopandas as gpd
-import pandas as pd
-import networkx as nx
-import matplotlib.pyplot as plt
 import momepy
-import shapely
-from shapely.geometry import Point, LineString
-from geojson import Point, Feature, FeatureCollection, dump
+import networkx as nx
+import pandas as pd
+
 from tdsp import *
-import datetime
 
 MAP_FILE_NAME = 'selfmade sea grid map2.geojson'
 TEST_FILE_NAME = 'test.csv'
@@ -54,35 +51,50 @@ def read_map():
     return nodes, edges_new
 
 
-def run_dijkstra(nodes2, edges2, from_node, to_node, start_time):
-    g = MyGraph(nodes2, edges2)
-    return dijkstra(g, from_node, to_node, start_time)
-
+def run_dijkstra(g, from_node, to_node, start_time):
+    path, _ = dijkstra(g, from_node, to_node, start_time)
+    return path
     # problem with 2134 to 2038 solved
 
 
-def save_to_file(nodes2, path2, file_name):
-    nodes_on_shortest_path = extract_path(path2)
-    save_path(nodes2, nodes_on_shortest_path, file_name)
+def run_dijkstra_and_return_all(g, from_node, to_node, start_time):
+    return dijkstra(g, from_node, to_node, start_time)
+
+
+def save_to_file(nodes, path, file_name):
+    nodes_on_shortest_path = extract_path(path)
+    save_path(nodes, nodes_on_shortest_path, file_name)
 
 
 # %%
 
 def run_test():
     # read map
-    nodes_test, edges_test = read_map()
-    # count time
+    nodes, edges = read_map()
+    # construct graph
+    g = MyGraph(nodes, edges)
+    # run dijkstra and count time
     df = pd.read_csv(TEST_FILE_NAME)
+    df['time'] = ''
+    df['total states'] = ''
+    df['path length'] = ''
+    df['path'] = ''
+    for i, row in df.iterrows():
+        from_node = row['from']
+        to_node = row['to']
+        # count time
+        start_time = datetime.datetime.now()
+        path, number_of_states = run_dijkstra_and_return_all(g, from_node, to_node, 0)
+        end_time = datetime.datetime.now()
+        delta = end_time - start_time
+        # to milliseconds
+        df.at[i, 'time'] = int(delta.total_seconds() * 1000)
+        df.at[i, 'total states'] = number_of_states
+        df.at[i, 'path'] = path
+        df.at[i, 'path length'] = len(path)
 
-    list1 = df['from'].tolist()
-    list2 = df['to'].tolist()
-    n = len(list1)
-    start_time = datetime.datetime.now()
-    for i in range(n):
-        run_dijkstra(nodes_test, edges_test, list1[i], list2[i], 0)
-
-    end_time = datetime.datetime.now()
-    print('Time: ', end_time - start_time)
+    # save results
+    df.to_csv('output/test_result_0312_with_states_3.csv')
 
 
 if __name__ == "__main__":
@@ -95,9 +107,11 @@ if __name__ == "__main__":
         else:
             print('Wrong argument')
     else:
-        nodes, edges = read_map()
-        path = run_dijkstra(nodes, edges, 2134, 2038, 0)
-        save_to_file(nodes, path, '0310_refactor')
+        # run a single query and save path to file
+        nodes_1, edges_1 = read_map()
+        g_1 = MyGraph(nodes_1, edges_1)
+        path_1 = run_dijkstra(g_1, 4, 456, 0)
+        save_to_file(nodes_1, path_1, '0313_4_456')
 
 # %%
 # def printNeighbours(node):

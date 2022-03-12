@@ -21,6 +21,7 @@ def add_state(state):
     f = state.get_f()
     if node in entry_finder:
         remove_state(node)
+
     count = next(counter)
     entry = [f, count, state]
     entry_finder[node] = entry
