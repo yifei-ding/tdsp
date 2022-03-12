@@ -111,7 +111,7 @@ if __name__ == "__main__":
         nodes_1, edges_1 = read_map()
         g_1 = MyGraph(nodes_1, edges_1)
         path_1 = run_dijkstra(g_1, 4, 456, 0)
-        save_to_file(nodes_1, path_1, '0313_4_456')
+        save_to_file(nodes_1, path_1, '0313_4_456_change_visited')
 
 # %%
 # def printNeighbours(node):

@@ -79,11 +79,11 @@ def dijkstra(graph, start_vertex, end_vertex, start_time):
         if current_state.is_goal():
             return current_state.extract_path(), explored_states
 
-        visited.append(current_state)
+        visited.append(current_vertex)
         # print('current vertex: ', current_vertex)
         # print('neighbours: ', graph.getNeighbouringNodes(current_vertex))
         for neighbour in graph.get_accessible_states(current_state):
-            if neighbour not in visited:
+            if neighbour.get_node() not in visited:
                 # relax
                 # get distance between current_vertex and the neighbour
                 distance = graph.get_distance(current_vertex, neighbour.get_node())
