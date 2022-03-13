@@ -1,4 +1,5 @@
 import sys
+import utils
 
 
 class State(object):
@@ -25,8 +26,8 @@ class State(object):
     def set_timestep(self, timestep):
         self.timestep = timestep
 
-    def set_h(self):
-        self.h = self.distance(self.node, self.get_goal_vertex())
+    def set_h(self, h):
+        self.h = h
 
     def get_h(self):
         return self.h
@@ -51,11 +52,11 @@ class State(object):
 
     def extract_path(self):
         state = self
-        path2 = [state]
+        path2 = [state.get_node()]
         while state.parent is not None:
             state = state.parent
-            path2.append(state)
-        return path2
+            path2.append(state.get_node())
+        return list(reversed(path2))
 
     def __lt__(self, other):
         return self.get_f < other.get_f
@@ -69,11 +70,6 @@ class State(object):
 
     def __repr__(self):
         return "node={0}, timestep={1}, g={2}".format(self.node, self.timestep, self.g)
-
-    @staticmethod
-    def distance(self, node, end_vertex):
-        # TODO
-        return 0
 
     def is_goal(self):
         return self.node == self.goal_vertex

@@ -73,6 +73,8 @@ def run_test():
     nodes, edges = read_map()
     # construct graph
     g = MyGraph(nodes, edges)
+    # add obstacle
+    g.add_moving_obstacle(1000, 321, 123, 2)
     # run dijkstra and count time
     df = pd.read_csv(TEST_FILE_NAME)
     df['time'] = ''
@@ -84,17 +86,18 @@ def run_test():
         to_node = row['to']
         # count time
         start_time = datetime.datetime.now()
+        print(f'Querying: from={from_node}, to={to_node}')
         path, number_of_states = run_dijkstra_and_return_all(g, from_node, to_node, 0)
         end_time = datetime.datetime.now()
         delta = end_time - start_time
         # to milliseconds
-        df.at[i, 'time'] = int(delta.total_seconds() * 1000)
+        df.at[i, 'time'] = round(delta.total_seconds(),4)
         df.at[i, 'total states'] = number_of_states
         df.at[i, 'path'] = path
         df.at[i, 'path length'] = len(path)
 
     # save results
-    df.to_csv('output/test_result_0313_with_states_4.csv')
+    df.to_csv('output/test_result_0313_with_states_with_obstacle_astar_4.csv')
 
 
 if __name__ == "__main__":
@@ -104,6 +107,10 @@ if __name__ == "__main__":
         if arg == 'test':
             print('run test')
             run_test()
+        if arg == 'test astar':
+            print('run test astar')
+            ALGORITHM_TYPE = 'astar'
+            run_test()
         else:
             print('Wrong argument')
     else:
@@ -111,5 +118,10 @@ if __name__ == "__main__":
         nodes_1, edges_1 = read_map()
         g_1 = MyGraph(nodes_1, edges_1)
         path_1 = run_dijkstra(g_1, 7, 99, 0)
-        save_to_file(nodes_1, path_1, '0313_7_99')
+        print(path_1)
+        # save_to_file(nodes_1, path_1, '0313_7_99')
+
+
+#%%
+
 
