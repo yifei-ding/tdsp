@@ -4,19 +4,20 @@ Created on Tue Mar  8 11:59:14 2022
 
 @author: yifei
 """
-
+import numpy as np
 from shapely.geometry import LineString
 from geojson import Feature, FeatureCollection, dump
 from heapq_modified import *
 from State import State
-
-explored_states = 0
+from queue import PriorityQueue
 
 
 class MyGraph(object):
     def __init__(self, nodes, edges):
         self.nodes = nodes
         self.edges = edges
+        self.explored_states = 0
+        self.edges['time_dependent_weight'] = np.empty((len(self.edges), 0)).tolist()
 
     def get_neighbouring_nodes(self, node_id):
         mask = (self.edges['node_start'] == node_id)
@@ -33,7 +34,6 @@ class MyGraph(object):
         return self.edges[mask].iloc[0]['weight']
 
     def get_accessible_states(self, current_state):
-        global explored_states
         node_id = current_state.get_node()
         timestep = current_state.get_timestep()
 
@@ -42,28 +42,103 @@ class MyGraph(object):
 
         # check if the neighbours are accessible at this timestep
         for item in neighbours:
-            if self.is_accessible(item, timestep):
+            edge_index = self.get_edge_by_two_endpoints(node_id, item)
+            if self.is_accessible(edge_index, timestep):
                 if item in entry_finder:
                     result.append(entry_finder[item][2])
                 else:
                     result.append(State.from_parent(item, current_state))
-                    explored_states += 1
         return result
 
-    def is_accessible(self, item, timestep):
-        # TODO
+    def is_accessible(self, edge_index, timestep):
+        time_intervals = self.edges.iloc[edge_index]['time_dependent_weight']
+
+        for interval in time_intervals:
+            start_time = interval[0]
+            end_time = interval[1]
+            if start_time <= timestep <= end_time:
+                print(f'Cannot enter: edge={edge_index}, timestep={timestep}')
+                return False
+
         return True
 
-    def add_moving_obstacle(self, radius, speed, start_vertex, end_vertex):
-        # TODO
-        return None
+    def add_moving_obstacle(self, radius, speed, start_vertex, end_vertex, start_time):
+        path = pure_dijkstra(self, start_vertex, end_vertex)
+        # path = extract_path(path)
+        for i, node in enumerate(path):
+            if i < len(path) - 1:
+                next_node_on_path = path[i + 1]
+                travel_time = self.get_distance(node, next_node_on_path) // speed // 2
+                print(f'distance={self.get_distance(node, next_node_on_path)}, travel_time={travel_time}')
+                temp = start_time
+                end_time = temp + travel_time
+
+                for neighbour in self.get_neighbouring_nodes(node):
+                    edge_index = self.get_edge_by_two_endpoints(node, neighbour)
+                    self.edges.at[edge_index, 'time_dependent_weight'].append((temp, end_time))
+
+                start_time = end_time
+            else:
+                for neighbour in self.get_neighbouring_nodes(node):
+                    edge_index = self.get_edge_by_two_endpoints(node, neighbour)
+                    self.edges.at[edge_index, 'time_dependent_weight'].append((start_time, start_time + travel_time))
+
+        return path
+
+    def get_edge_by_two_endpoints(self, u, v):
+        mask = (self.edges['node_start'] == u) & (self.edges['node_end'] == v) | (
+                self.edges['node_start'] == v) & (self.edges['node_end'] == u)
+        return self.edges[mask].index.tolist()[0]  # suppose there's one exact match
+
+
+# path finding using dijkstra and no time-dependency 
+def pure_dijkstra(graph, start_vertex, end_vertex):
+    D = {v: float('inf') for v in range(len(graph.nodes))}  # initialize shortest distance for all nodes
+    path = {v: -1 for v in range(len(graph.nodes))}  # initialize previous node along shortest path
+    D[start_vertex] = 0  # the shortest path to the start vertex is 0
+    path[start_vertex] = None  # the previous node of the start_vertex is None
+    visited = []
+    pq = PriorityQueue()
+    pq.put((0, start_vertex))
+
+    while not pq.empty():
+        # print('priority queue: {0}'.format(pq.queue))
+        (dist, current_vertex) = pq.get()
+        if current_vertex == end_vertex:
+            result = []
+            node = end_vertex
+
+            while node != start_vertex:
+                result.append(node)
+                node = path[node]
+
+            result.append(start_vertex)
+            return list(reversed(result))
+        visited.append(current_vertex)
+        # print('current vertex: ', current_vertex)
+        # print('neighbours: ', graph.getNeighbouringNodes(current_vertex))
+        for neighbour in graph.get_neighbouring_nodes(current_vertex):
+            if neighbour not in visited:
+                # relax
+                distance = graph.get_distance(current_vertex,
+                                              neighbour)  # get distance between current_vertex and the neighbour
+                new_cost = D[current_vertex] + distance
+                previous_cost = D[neighbour]
+
+                if (new_cost < previous_cost):
+                    # if found shorter distance, update cost
+                    pq.put((new_cost, neighbour))
+                    # print('set ', neighbour,' = ', new_cost)
+                    D[neighbour] = new_cost
+                    path[neighbour] = current_vertex
+
+    return None
 
 
 # dijkstra with heap queue
 def dijkstra(graph, start_vertex, end_vertex, start_time):
     visited = []  # explored states
-    speed = 1000
-    global explored_states
+    speed = 1
 
     initial_state = State(start_vertex, start_time, 0, None, end_vertex)
     # hq = []
@@ -77,11 +152,11 @@ def dijkstra(graph, start_vertex, end_vertex, start_time):
         # print("current_state: {0}".format(current_state))
 
         if current_state.is_goal():
-            return current_state.extract_path(), explored_states
+            return current_state.extract_path(), graph.explored_states
 
         visited.append(current_vertex)
         # print('current vertex: ', current_vertex)
-        # print('neighbours: ', graph.getNeighbouringNodes(current_vertex))
+        # print('neighbours: ', graph.get_accessible_states(current_state))
         for neighbour in graph.get_accessible_states(current_state):
             if neighbour.get_node() not in visited:
                 # relax
@@ -97,9 +172,10 @@ def dijkstra(graph, start_vertex, end_vertex, start_time):
                     neighbour.set_parent(current_state)
                     # heapq.heappush(hq, neighbour) # issue: did not update, it's adding new
                     add_state(neighbour)
+                    graph.explored_states += 1
                     # print('Push',neighbour)
 
-    return [], explored_states
+    return [], graph.explored_states
 
 
 def extract_path(path):
@@ -155,6 +231,20 @@ def save_path(nodes, nodes_on_shortest_path, file_name):
 #
 # g2 = MyGraph(df3, df2)
 #
+# print(g2.add_moving_obstacle(0, 1, 0, 6, 2))
+#
 # path, number_of_states = dijkstra(g2, 0, 8, 0)
 #
 # print(extract_path(path), number_of_states)
+# # %%
+# index = 6
+# timestep = 3
+# time_intervals = df2.iloc[index]['time_dependent_weight']
+#
+# for interval in time_intervals:
+#     start_time = interval[0]
+#     end_time = interval[1]
+#     if timestep >= start_time and timestep <= end_time:
+#         print(True)
+#
+#     print(False)

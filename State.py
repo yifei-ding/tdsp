@@ -68,7 +68,7 @@ class State(object):
         return self.node == other.node and self.timestep == other.timestep
 
     def __repr__(self):
-        return "node={0}, timestep={1}, cost={2}".format(self.node, self.timestep, self.g)
+        return "node={0}, timestep={1}, g={2}".format(self.node, self.timestep, self.g)
 
     @staticmethod
     def distance(self, node, end_vertex):

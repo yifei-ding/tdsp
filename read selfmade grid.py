@@ -94,7 +94,7 @@ def run_test():
         df.at[i, 'path length'] = len(path)
 
     # save results
-    df.to_csv('output/test_result_0312_with_states_3.csv')
+    df.to_csv('output/test_result_0313_with_states_4.csv')
 
 
 if __name__ == "__main__":
@@ -110,14 +110,6 @@ if __name__ == "__main__":
         # run a single query and save path to file
         nodes_1, edges_1 = read_map()
         g_1 = MyGraph(nodes_1, edges_1)
-        path_1 = run_dijkstra(g_1, 4, 456, 0)
-        save_to_file(nodes_1, path_1, '0313_4_456_change_visited')
+        path_1 = run_dijkstra(g_1, 7, 99, 0)
+        save_to_file(nodes_1, path_1, '0313_7_99')
 
-# %%
-# def printNeighbours(node):
-#     print(nodes[nodes['nodeID'] == node])
-#     print(g.getNeighbouringNodes(node))
-#     for item in g.getNeighbouringNodes(node):
-#         print(nodes[nodes['nodeID'] == item].to_string(header=False), g.getDistance(node, item))
-
-# printNeighbours(2027)
