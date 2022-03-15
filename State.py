@@ -52,10 +52,10 @@ class State(object):
 
     def extract_path(self):
         state = self
-        path2 = [state.get_node()]
+        path2 = [state]
         while state.parent is not None:
             state = state.parent
-            path2.append(state.get_node())
+            path2.append(state)
         return list(reversed(path2))
 
     def __lt__(self, other):
@@ -69,7 +69,7 @@ class State(object):
         return self.node == other.node and self.timestep == other.timestep
 
     def __repr__(self):
-        return "node={0}, timestep={1}, g={2}".format(self.node, self.timestep, self.g)
+        return "(node={0}, timestep={1})".format(self.node, self.timestep)
 
     def is_goal(self):
         return self.node == self.goal_vertex

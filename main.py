@@ -15,7 +15,7 @@ import pandas as pd
 from tdsp import *
 
 MAP_FILE_NAME = 'selfmade sea grid map2.geojson'
-TEST_FILE_NAME = 'test.csv'
+TEST_FILE_NAME = 'test_50.csv'
 
 
 def read_map():
@@ -51,14 +51,14 @@ def read_map():
     return nodes, edges_new
 
 
-def run_dijkstra(g, from_node, to_node, start_time):
-    path, _ = dijkstra(g, from_node, to_node, start_time)
+def run_dijkstra(g, from_node, to_node, start_time, heuristic_type='default'):
+    path, _ = dijkstra(g, from_node, to_node, start_time, heuristic_type)
     return path
     # problem with 2134 to 2038 solved
 
 
-def run_dijkstra_and_return_all(g, from_node, to_node, start_time):
-    return dijkstra(g, from_node, to_node, start_time)
+def run_dijkstra_and_return_all(g, from_node, to_node, start_time, heuristic_type='default'):
+    return dijkstra(g, from_node, to_node, start_time, heuristic_type)
 
 
 def save_to_file(nodes, path, file_name):
@@ -68,7 +68,7 @@ def save_to_file(nodes, path, file_name):
 
 # %%
 
-def run_test():
+def run_test(heuristic_type='default'):
     # read map
     nodes, edges = read_map()
     # construct graph
@@ -86,18 +86,18 @@ def run_test():
         to_node = row['to']
         # count time
         start_time = datetime.datetime.now()
-        print(f'Querying: from={from_node}, to={to_node}')
-        path, number_of_states = run_dijkstra_and_return_all(g, from_node, to_node, 0)
+        print(f'Querying {i}: from={from_node}, to={to_node}')
+        path, number_of_states = run_dijkstra_and_return_all(g, from_node, to_node, 0, heuristic_type)
         end_time = datetime.datetime.now()
         delta = end_time - start_time
         # to milliseconds
-        df.at[i, 'time'] = round(delta.total_seconds(),4)
+        df.at[i, 'time'] = round(delta.total_seconds(), 4)
         df.at[i, 'total states'] = number_of_states
         df.at[i, 'path'] = path
         df.at[i, 'path length'] = len(path)
 
     # save results
-    df.to_csv('output/test_result_0313_with_states_with_obstacle_astar_4.csv')
+    df.to_csv('output/test_result_0314_7_astar_graphweight.csv')
 
 
 if __name__ == "__main__":
@@ -108,20 +108,19 @@ if __name__ == "__main__":
             print('run test')
             run_test()
         if arg == 'test astar':
-            print('run test astar')
-            ALGORITHM_TYPE = 'astar'
-            run_test()
+            print('run test with astar')
+            run_test('astar')
         else:
             print('Wrong argument')
     else:
         # run a single query and save path to file
         nodes_1, edges_1 = read_map()
         g_1 = MyGraph(nodes_1, edges_1)
-        path_1 = run_dijkstra(g_1, 7, 99, 0)
+        # g_1.add_moving_obstacle(1, 0, 2, 228422)
+        # g_1.add_moving_obstacle(1, 2, 10, 685266)
+
+        path_1 = run_dijkstra(g_1, 2892, 2592, 0, 'astar')
         print(path_1)
-        # save_to_file(nodes_1, path_1, '0313_7_99')
+        # save_to_file(nodes_1, path_1, '0314_2892_2592_great_circle_distance')
 
-
-#%%
-
-
+# %%

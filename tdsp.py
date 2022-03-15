@@ -21,6 +21,7 @@ class MyGraph(object):
         self.explored_states = 0
         self.edges['time_dependent_weight'] = np.empty((len(self.edges), 0)).tolist()
         self.explored = {}  # for finding if a node is already explored (but not necessarily added to visited)
+        self.heuristic_type = 'default'
 
     def get_neighbouring_nodes(self, node_id):
         mask = (self.edges['node_start'] == node_id)
@@ -36,10 +37,13 @@ class MyGraph(object):
                 self.edges['node_start'] == v) & (self.edges['node_end'] == u)
         return self.edges[mask].iloc[0]['weight']
 
-    def get_distance(self, u, v):
-        x1, y1 = self.nodes.iloc[u]['x'], self.nodes.iloc[u]['y']
-        x2, y2 = self.nodes.iloc[v]['x'], self.nodes.iloc[v]['y']
-        return utils.haversine(coord1=(x1, y1), coord2=(x2, y2))
+    def get_heuristic(self, u, v):
+        if self.heuristic_type == 'astar':
+            x1, y1 = self.nodes.iloc[u]['x'], self.nodes.iloc[u]['y']
+            x2, y2 = self.nodes.iloc[v]['x'], self.nodes.iloc[v]['y']
+            return utils.haversine(coord1=(x1, y1), coord2=(x2, y2))
+        else:
+            return 0
 
     def get_accessible_states(self, current_state):
         node_id = current_state.get_node()
@@ -95,8 +99,14 @@ class MyGraph(object):
                 self.edges['node_start'] == v) & (self.edges['node_end'] == u)
         return self.edges[mask].index.tolist()[0]  # suppose there's one exact match
 
+    def set_heuristic_type(self, heuristic_type):
+        self.heuristic_type = heuristic_type
 
-# path finding using dijkstra and no time-dependency 
+    def get_heuristic_type(self):
+        return self.heuristic_type
+
+
+# for path finding of the moving obstacle, using dijkstra and no time-dependency
 def pure_dijkstra(graph, start_vertex, end_vertex):
     D = {v: float('inf') for v in range(len(graph.nodes))}  # initialize shortest distance for all nodes
     path = {v: -1 for v in range(len(graph.nodes))}  # initialize previous node along shortest path
@@ -141,16 +151,21 @@ def pure_dijkstra(graph, start_vertex, end_vertex):
 
 
 # dijkstra with heap queue
-def dijkstra(graph, start_vertex, end_vertex, start_time):
+def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type):
     graph.explored_states = 0
     graph.explored = {}
     visited = []  # explored states
     speed = 1
+    if heuristic_type == 'astar':
+        graph.set_heuristic_type('astar')
+        print(f'graph.heuristic_type={graph.get_heuristic_type()}')
+    else:
+        print(f'graph.heuristic_type={graph.get_heuristic_type()}')
 
     initial_state = State(start_vertex, start_time, 0, None, end_vertex)
     # hq = []
     # heapq.heappush(hq, initial_state)
-    initial_state.set_h(graph.get_distance(start_vertex, end_vertex))
+    initial_state.set_h(graph.get_heuristic(start_vertex, end_vertex))
     hq = modified_heapq()
     hq.add_state(initial_state)
     while len(hq.hq) > 0:
@@ -179,7 +194,7 @@ def dijkstra(graph, start_vertex, end_vertex, start_time):
                     neighbour.set_g(new_distance)
                     neighbour.set_timestep(new_timestep)
                     neighbour.set_parent(current_state)
-                    neighbour.set_h(graph.get_distance(neighbour.get_node(), end_vertex))
+                    neighbour.set_h(graph.get_heuristic(neighbour.get_node(), end_vertex))
 
                     # heapq.heappush(hq, neighbour) # issue: did not update, it's adding new
                     hq.add_state(neighbour)
@@ -194,7 +209,7 @@ def extract_path(path):
     result = []
     for item in path:
         result.append(item.get_node())
-    return list(reversed(result))
+    return result
 
 
 def save_path(nodes, nodes_on_shortest_path, file_name):
@@ -211,7 +226,6 @@ def save_path(nodes, nodes_on_shortest_path, file_name):
     with open(fileName_str, 'w') as f:
         dump(feature_collection, f)
     print('Saved!')
-
 
 # %% test2: use self created graph
 # import pandas as pd
