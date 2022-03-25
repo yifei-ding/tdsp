@@ -25,7 +25,7 @@ time_col = 'timestep'
 
 # Create figure
 fig = px.scatter_mapbox(df,
-          lat="lat" ,
+          lat="lat",
           lon="lon",
           hover_name='type',
           color='type',

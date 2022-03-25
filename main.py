@@ -13,15 +13,21 @@ import networkx as nx
 import pandas as pd
 from datetime import date
 
+from shapely.geometry import LineString
+from geojson import Feature, FeatureCollection, dump
+
 from model.Obstacle import Obstacle
 from model.mygraph import MyGraphWithAdjacencyList
+from model.State import State
+
 from tdsp import *
+import utils
 
 MAP_FILE_NAME = 'data/selfmade sea grid map2.geojson'
 TEST_FILE_NAME = 'data/test_50.csv'
 
 
-def read_map(file_name = MAP_FILE_NAME):
+def read_map(file_name=MAP_FILE_NAME):
     df = gpd.read_file(file_name)
     df.to_crs(epsg=4326)
     G = momepy.gdf_to_nx(df, approach="primal")
@@ -139,7 +145,7 @@ def save_path(nodes, nodes_on_shortest_path, file_name):
 
 # %%
 
-def run_test(heuristic_type='default', str_append_to_file_name='a', save_path = False):
+def run_test(heuristic_type='default', str_append_to_file_name='a', save_path=False):
     # read map
     nodes, edges = read_map()
     # construct graph
@@ -172,13 +178,13 @@ def run_test(heuristic_type='default', str_append_to_file_name='a', save_path = 
         df.at[i, 'total states'] = number_of_states
         df.at[i, 'path'] = path
         df.at[i, 'path length'] = len(path)
-        # save path to file
+        # save each path to file
         if save_path:
-            save_to_file(nodes, path, 'output/test0321/path_' + str(from_node) + '-' + str(to_node)  +
+            save_to_file(nodes, path, 'output/test0321/path_' + str(from_node) + '-' + str(to_node) +
                          str_append_to_file_name + '_' + today_str)
 
     # save testing results
-    df.to_csv('output/test_result_' + str_append_to_file_name + '_' + today_str +'.csv')
+    df.to_csv('output/test_result_' + str_append_to_file_name + '_' + today_str + '.csv')
 
 
 if __name__ == "__main__":

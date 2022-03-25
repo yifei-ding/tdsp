@@ -7,7 +7,7 @@ Created on Tue Mar 15 15:24:04 2022
 
 import sys
 import utils
-from State import State
+from model.State import State
 
 
 class MyGraphWithAdjacencyList(object):
