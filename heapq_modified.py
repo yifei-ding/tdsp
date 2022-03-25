@@ -24,7 +24,6 @@ class modified_heapq(object):
         f = state.get_f()
         if node in self.entry_finder:
             self.remove_state(node)
-
         count = next(self.counter)
         entry = [f, count, state]
         self.entry_finder[node] = entry
