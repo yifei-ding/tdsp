@@ -20,24 +20,24 @@ nodes_new, nodes_with_coordinates, weights = preprocessing_map_to_adjacency_list
 
 # %%
 import sys
-obstacle = Obstacle(100, 40, 40, 70, 70, 0, 2000, 1)
-obstacle2 = Obstacle(100, -50, -50, -30,-30, 0, 10000, 1)
-obstacle3 = Obstacle(1,160, 25, 160, 22,2800, 4400, 9999)
+# obstacle = Obstacle(100, 40, 40, 70, 70, 0, 2000, 1)
+# obstacle2 = Obstacle(100, -50, -50, -30,-30, 0, 10000, 1)
+obstacle3 = Obstacle(1000000,160, 25, 160, 22,2800, 4400, 9999)
 #%%
 g2 = MyGraphWithAdjacencyList(nodes_new, nodes_with_coordinates, weights)
-g2.add_obstacle(obstacle)
-g2.add_obstacle(obstacle2)
+# g2.add_obstacle(obstacle)
+# g2.add_obstacle(obstacle2)
 g2.add_obstacle(obstacle3)
 print(g2.obstacles)
 
 #%%
 import numpy as np
 path = dijkstra(g2, 2258, 8261, 0, 'astar')[0]
-# print(path)
+print(path)
 # path2 = dijkstra(g2, 3363, 5910, 1000, 'astar')[0]
 
 
-#%%
+#%% transform into time series for animation
 
 import numpy as np
 
@@ -78,13 +78,11 @@ def get_path_moving_df(nodes_with_coordinates, path, name = 'path'):
     df2['lon'] = [nodes_with_coordinates[x.get_node()][0] for x in path]
     df2['lat'] = [nodes_with_coordinates[y.get_node()][1] for y in path]
     df2['timestep'] = [int(x.get_timestep()) for x in path]    
-    print(df2[0:10])
     duplicate_mask = df2['timestep'].duplicated
     c = df2[duplicate_mask()].index
     if c.shape[0] == 1:
         print('has duplicate. path cross +- 180 longitude')
         split_point = c[0]
-        print(f'split point = {split_point}')
         temp_df1 = interpolate_df(df2[:split_point])
         temp_df2 = interpolate_df(df2[split_point:])
         df_new = pd.concat([temp_df1,temp_df2]).drop_duplicates(

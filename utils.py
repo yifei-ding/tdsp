@@ -21,9 +21,9 @@ def haversine(coord1, coord2):
 
 def calculate_line_segment_length(x1, y1, x2, y2):
     # TODO: fix distance calculation
-    import math
-    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-
+    # import math
+    # return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return haversine(coord1=(x1,y1), coord2=(x2,y2))
 
 def pure_dijkstra(graph, start_vertex, end_vertex):
     """for path finding of the moving obstacle, using dijkstra and no time-dependency"""

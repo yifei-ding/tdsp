@@ -112,7 +112,6 @@ class MyGraphWithAdjacencyList(object):
                     projection_point_y = y1 + u * (y2 - y1)
                     distance = utils.calculate_line_segment_length(x0, y0, projection_point_x, projection_point_y)
 
-            print(f'distance = {distance}')
             return distance < obstacle.get_radius()
         else:
             return False
