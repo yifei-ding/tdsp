@@ -17,15 +17,31 @@ class Obstacle(object):
     def get_radius(self):
         return self.radius
 
+    def get_start_x(self):
+        return self.start_x
+
+    def get_start_y(self):
+        return self.start_y
+
+    def get_end_x(self):
+        return self.end_x
+
+    def get_end_y(self):
+        return self.end_y
+
+    def get_start_time(self):
+        return self.start_time
+
+    def get_end_time(self):
+        return self.end_time
+
     def get_obstacle_location(self, timestep):
-        if self.start_time <= timestep < self.end_time:
+        if self.start_time <= timestep <= self.end_time:
             x = self.start_x + (timestep - self.start_time) / (self.end_time - self.start_time) * (
                     self.end_x - self.start_x)
             y = self.start_y + (timestep - self.start_time) / (self.end_time - self.start_time) * (
                     self.end_y - self.start_y)
             return x, y
-        elif timestep >= self.end_time:
-            return self.end_x, self.end_y
         else:
             return None
 

@@ -69,7 +69,12 @@ class State(object):
         return self.node == other.node and self.timestep == other.timestep
 
     def __repr__(self):
-        return "(node={0}, timestep={1})".format(self.node, self.timestep)
+        return f'(node = {self.node}, timestep = {self.timestep})'
 
     def is_goal(self):
         return self.node == self.goal_vertex
+
+    def __hash__(self) -> int:
+        return hash((self.node, self.timestep))
+
+

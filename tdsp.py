@@ -31,6 +31,7 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type):
         try:
             current_state = hq.pop_state()
         except KeyError as e:
+            print('KyeError')
             return [], graph.explored_states
         current_vertex = current_state.get_node()
         current_timestep = current_state.get_timestep()
@@ -65,6 +66,6 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type):
                     hq.add_state(neighbour)
                     graph.explored_states += 1
                     graph.explored[neighbour.get_node()] = neighbour
-                    # print('Push',neighbour)
+                    # print('Push', neighbour)
 
     return [], graph.explored_states

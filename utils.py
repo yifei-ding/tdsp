@@ -20,6 +20,7 @@ def haversine(coord1, coord2):
     return round(meters)
 
 def calculate_line_segment_length(x1, y1, x2, y2):
+    # TODO: fix distance calculation
     import math
     return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
