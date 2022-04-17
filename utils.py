@@ -12,9 +12,14 @@ def haversine(coord1, coord2):
     delta_lambda = math.radians(lon2 - lon1)
 
     a = math.sin(delta_phi / 2.0) ** 2 + math.cos(phi_1) * math.cos(phi_2) * math.sin(delta_lambda / 2.0) ** 2
+    a = round(a,8) # fix issue when a=1.0000000000000002, 1-a = -2.220446049250313e-16
 
+    # try:
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
+    # except ValueError as e:
+    #     print('ValueError')
+    #     print(f'a={a}, 1-a = {1 - a}')
+    #     print(coord1,coord2)
     meters = R * c  # output distance in meters
 
     return round(meters)
@@ -67,3 +72,4 @@ def pure_dijkstra(graph, start_vertex, end_vertex):
                     path[neighbour] = current_vertex
 
     return None
+
