@@ -18,6 +18,7 @@ class MyGraphWithAdjacencyList(object):
         self.nodes_with_coordinates = nodes_with_coordinates  # {node: (x,y))}
         self.weights = weights
         self.explored_states = 0
+        self.relaxed_edges = 0
         self.explored = {}  # for finding if a node is already explored (but not necessarily added to visited)
         self.heuristic_type = 'default'
         self.obstacles = []
@@ -57,8 +58,8 @@ class MyGraphWithAdjacencyList(object):
                     result.append(self.explored[item])
                 else:
                     result.append(State.from_parent(item, current_state))
-            # else:
-                # print(f'edge({node_id}, {item}) is not accessible at timestep {timestep}')
+            else:
+                print(f'edge({node_id}, {item}) is not accessible at timestep {timestep}')
 
         # print(f'current state = {current_state}, result =  {len(result)}')
 
@@ -75,10 +76,6 @@ class MyGraphWithAdjacencyList(object):
 
     def add_obstacle_by_list(self, obstacle_list):
         self.obstacles = obstacle_list
-
-    # def is_accessible(self, u, v, timestep):
-    #     # TODO
-    #     return True
 
     def get_time_dependent_weight(self, u, v, timestep):
         result = 1  # default coefficient is 1

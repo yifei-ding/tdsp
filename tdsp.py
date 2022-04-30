@@ -12,11 +12,12 @@ from model.State import State
 # dijkstra with heap queue
 def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return_type='default'):
     graph.explored_states = 0
+    graph.relaxed_edges = 0
     graph.explored = {}
     graph.number_of_total_obstacles_met = 0
     graph.number_of_unaccessible_obstacles_met = 0
     visited = []  # explored states
-    speed = 1000
+    speed = 1000 * 10
     if heuristic_type == 'astar':
         graph.set_heuristic_type('astar')
         print(f'graph.heuristic_type={graph.get_heuristic_type()}')
@@ -44,7 +45,7 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return
         if current_state.is_goal():
             if return_type == 'detailed':
                 return current_state.extract_path(), graph.explored_states, graph.number_of_total_obstacles_met, \
-                       graph.number_of_unaccessible_obstacles_met, graph.explored
+                       graph.number_of_unaccessible_obstacles_met, graph.explored, graph.relaxed_edges
             else:
                 return current_state.extract_path()
 
@@ -52,6 +53,8 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return
         # print('current vertex: ', current_vertex)
         # print('neighbours: ', graph.get_accessible_states(current_state))
         for neighbour in graph.get_accessible_states(current_state):
+            graph.explored_states += 1
+
             if neighbour.get_node() not in visited:
                 # relax
                 # get distance between current_vertex and the neighbour
@@ -68,15 +71,14 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return
                     neighbour.set_timestep(new_timestep)
                     neighbour.set_parent(current_state)
                     neighbour.set_h(graph.get_heuristic(neighbour.get_node(), end_vertex))
-
+                    graph.relaxed_edges += 1
                     # heapq.heappush(hq, neighbour) # issue: did not update, it's adding new
                     hq.add_state(neighbour)
-                    graph.explored_states += 1
                     graph.explored[neighbour.get_node()] = neighbour
                     # print('Push', neighbour)
 
     if return_type == 'detailed':
         return [], graph.explored_states, graph.number_of_total_obstacles_met, \
-               graph.number_of_unaccessible_obstacles_met, graph.explored
+               graph.number_of_unaccessible_obstacles_met, graph.explored, graph.relaxed_edges
     else:
         return []

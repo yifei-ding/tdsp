@@ -107,14 +107,14 @@ def get_path_moving_df(nodes_with_coordinates, path, name = 'path'):
 #%%
 # a = get_obstalce_moving_df(obstacle, name = 'obstacle1')
 # b = get_obstalce_moving_df(obstacle2, name = 'obstacle2')
-# b_1 = get_obstalce_moving_df(obstacle3, name = 'obstacle3')
-c = get_path_moving_df(nodes_with_coordinates, path, name = 'path1')
+b_1 = get_obstalce_moving_df(obstacle3, name = 'obstacle3')
+# c = get_path_moving_df(nodes_with_coordinates, path, name = 'path1')
 # d = get_path_moving_df(nodes_with_coordinates, path2, name = 'path2')
 
     
 # result = pd.concat([b_1,c])
 
-c.to_csv('test_path_with_obstacle_5.csv')
+b_1.to_csv('test_path_obstacle3.csv')
 #%% interpolation
 # import numpy as np
 
@@ -135,10 +135,16 @@ c.to_csv('test_path_with_obstacle_5.csv')
 
 
 #%%
+import pandas as pd
 df1 = pd.read_csv('test_path_no_obstacle.csv')
 df2 = pd.read_csv('test_path_with_obstacle_5.csv')
+df3 = pd.read_csv('test_path_obstacle3.csv')
 
+df1['type'] = 'path_no_obstacle'
+df2['type'] = 'path_with_obstacle'
+df3['type'] = 'obstacle'
+result = pd.concat([df1,df2,df3])
 
-df1['type'] = 'path1_no_obstacle'
-result = pd.concat([df1,df2])
+result = result[result['timestep'] % 200 == 0]
+#%%
 result.to_csv('comparison.csv')

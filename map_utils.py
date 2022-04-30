@@ -5,7 +5,7 @@ import networkx as nx
 import pandas as pd
 import pickle
 
-MAP_FILE_NAME = 'data/selfmade sea grid map2.geojson'
+MAP_FILE_NAME = 'data/selfmade sea grid map3.geojson'
 
 
 def read_map(file_name=MAP_FILE_NAME):
@@ -87,14 +87,17 @@ def create_weight_dict(edges, nodes_with_coordinates):
 
 
 if __name__ == "__main__":
-    nodes, edges = read_map()
-    nodes_new, nodes_with_coordinates, weights = preprocessing_map_to_adjacency_list_and_weight_dict(nodes,
-                                                                                                     edges)
-
-    dicts = {'nodes': nodes_new,
-             'coordinates': nodes_with_coordinates,
-             'weights': weights,
-             'old_nodes': nodes}  # for storing geometrical path
-    # save
-    pickle.dump(dicts, open("data/map.p", "wb"))
-
+    # nodes, edges = read_map()
+    # nodes_new, nodes_with_coordinates, weights = preprocessing_map_to_adjacency_list_and_weight_dict(nodes,
+    #                                                                                                  edges)
+    #
+    # dicts = {'nodes': nodes_new,
+    #          'coordinates': nodes_with_coordinates,
+    #          'weights': weights,
+    #          'old_nodes': nodes}  # for storing geometrical path
+    # # save
+    # pickle.dump(dicts, open("data/map2.p", "wb"))
+    map_info = pickle.load(open("data/map2.p", "rb"))
+    nodes_new, nodes_with_coordinates, weights = map_info['nodes'], map_info['coordinates'], map_info['weights']
+    a = list(nodes_with_coordinates.values()).index((0.0, 0.5))
+    print(a)
