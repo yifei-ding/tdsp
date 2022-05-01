@@ -86,6 +86,15 @@ def create_weight_dict(edges, nodes_with_coordinates):
     return result
 
 
+# precompute distances between all landmark and all nodes
+def get_distances_to_landmarks(landmarks, nodes_with_coordinates):
+    result = {0: {}, 1: {}, 2: {}, 3: {}} # initialize empty dict for 4 landmarks
+    for i, landmark in enumerate(landmarks):
+        for node_id in nodes_with_coordinates.keys():
+            result[i][node_id] = utils.haversine(landmark, nodes_with_coordinates[node_id])
+    return result
+
+
 if __name__ == "__main__":
     # nodes, edges = read_map()
     # nodes_new, nodes_with_coordinates, weights = preprocessing_map_to_adjacency_list_and_weight_dict(nodes,
@@ -97,7 +106,13 @@ if __name__ == "__main__":
     #          'old_nodes': nodes}  # for storing geometrical path
     # # save
     # pickle.dump(dicts, open("data/map2.p", "wb"))
+
     map_info = pickle.load(open("data/map2.p", "rb"))
     nodes_new, nodes_with_coordinates, weights = map_info['nodes'], map_info['coordinates'], map_info['weights']
-    a = list(nodes_with_coordinates.values()).index((0.0, 0.5))
-    print(a)
+    # a = list(nodes_with_coordinates.values()).index((0.0, 0.5))
+    # print(a)
+    landmarks = [(90.0, 30.5), (90.0, -30.5), (-90.0, 30.5), (-90.0, -30.5)]
+    landmarks_distances = get_distances_to_landmarks(landmarks, nodes_with_coordinates)
+    map_info['landmarks'] = landmarks
+    map_info['landmarks_distances'] = landmarks_distances
+    pickle.dump(map_info, open("data/map2_with_landmarks.p", "wb"))

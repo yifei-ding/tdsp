@@ -13,7 +13,7 @@ from model.State import State
 class MyGraphWithAdjacencyList(object):
     """new graph with adjacency list"""
 
-    def __init__(self, nodes, nodes_with_coordinates, weights):
+    def __init__(self, nodes, nodes_with_coordinates, weights, landmark=None):
         self.nodes = nodes  # in adjacency list
         self.nodes_with_coordinates = nodes_with_coordinates  # {node: (x,y))}
         self.weights = weights
@@ -24,6 +24,7 @@ class MyGraphWithAdjacencyList(object):
         self.obstacles = []
         self.number_of_total_obstacles_met = 0
         self.number_of_unaccessible_obstacles_met = 0
+        self.landmark = landmark
 
     def get_neighbouring_nodes(self, node_id):
         return self.nodes[node_id]
@@ -58,8 +59,8 @@ class MyGraphWithAdjacencyList(object):
                     result.append(self.explored[item])
                 else:
                     result.append(State.from_parent(item, current_state))
-            else:
-                print(f'edge({node_id}, {item}) is not accessible at timestep {timestep}')
+            # else:
+            #     print(f'edge({node_id}, {item}) is not accessible at timestep {timestep}')
 
         # print(f'current state = {current_state}, result =  {len(result)}')
 
@@ -68,6 +69,11 @@ class MyGraphWithAdjacencyList(object):
     def get_heuristic(self, u, v):
         if self.heuristic_type == 'astar':
             return utils.haversine(coord1=self.nodes_with_coordinates[u], coord2=self.nodes_with_coordinates[v])
+        elif self.heuristic_type == 'landmark':
+            max_value = 0
+            for i in range(0, 4):
+                max_value = max(abs(self.landmark[i][u] - self.landmark[i][v]), max_value)
+            return max_value
         else:
             return 0
 
@@ -97,7 +103,7 @@ class MyGraphWithAdjacencyList(object):
             x0, y0 = obstacle.get_obstacle_location(t)
             x1, y1 = self.nodes_with_coordinates[u]
             x2, y2 = self.nodes_with_coordinates[v]
-    
+
             # calculate the distance between point(x,y) and the edge(u,v)
             line_segment_length = utils.calculate_line_segment_length(x1, y1, x2, y2)
             if line_segment_length < 0.00000001:

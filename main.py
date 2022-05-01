@@ -21,7 +21,7 @@ from model.mygraph import MyGraphWithAdjacencyList
 from tdsp import *
 import json
 
-MAP_PICKLE_FILE_NAME = 'data/map2.p'  # geojson map file converted to dict and stored in pickle file
+MAP_PICKLE_FILE_NAME = 'data/map2_with_landmarks.p'  # geojson map file converted to dict and stored in pickle file
 TEST_FILE_NAME = 'data/test_50.csv'
 OBSTACLE_FILE_NAME = 'data/obstacles.csv'
 
@@ -88,8 +88,9 @@ def run_test(heuristic_type='default', str_append_to_file_name='a', save_path=Fa
     # read map
     map_info = pickle.load(open(MAP_PICKLE_FILE_NAME, "rb"))
     nodes_new, nodes_with_coordinates, weights = map_info['nodes'], map_info['coordinates'], map_info['weights']
+    landmarks = map_info['landmarks_distances']
     # construct graph
-    g = MyGraphWithAdjacencyList(nodes_new, nodes_with_coordinates, weights)
+    g = MyGraphWithAdjacencyList(nodes_new, nodes_with_coordinates, weights, landmarks)
     # add obstacles from list
     obstacle_list = get_obstacles(number_of_obstacles)
     g.add_obstacle_by_list(obstacle_list)
@@ -189,16 +190,17 @@ if __name__ == "__main__":
             run_test(str_append_to_file_name='rerun_test', heuristic_type='astar', save_path=False,
                      number_of_obstacles=50)
         if arg == 'test2':
-            run_test(str_append_to_file_name='test_50_obstacle', heuristic_type='astar', save_path=True,
-                     number_of_obstacles=50, return_type='detailed')
+            run_test(str_append_to_file_name='test_no_obstacle_astar', heuristic_type='astar', save_path=False,
+                     number_of_obstacles=0, return_type='detailed')
         else:
             print('Wrong argument')
     else:
         # run a single query and save path to file
         map_info = pickle.load(open(MAP_PICKLE_FILE_NAME, "rb"))
         nodes_new, nodes_with_coordinates, weights = map_info['nodes'], map_info['coordinates'], map_info['weights']
+        landmarks = map_info['landmarks_distances']
 
-        g_2 = MyGraphWithAdjacencyList(nodes_new, nodes_with_coordinates, weights)
+        g_2 = MyGraphWithAdjacencyList(nodes_new, nodes_with_coordinates, weights, landmarks)
         obstacle_list = []
         obstacle_start_node = nodes_with_coordinates[22749]
         obstacle_end_node = nodes_with_coordinates[22025]
@@ -227,14 +229,15 @@ if __name__ == "__main__":
 
         start_time = datetime.datetime.now()
         path, number_of_states, total_obstacles, unaccessible_edges, explored, relaxed_edges = \
-            run_dijkstra_and_return_all(g_2, from_node, to_node, 0, 'astar')
+            run_dijkstra_and_return_all(g_2, from_node, to_node, 0, heuristic_type='astar')
         end_time = datetime.datetime.now()
         delta = end_time - start_time
         print(f'geodesic distance={utils.haversine(from_coord,to_coord)}')
         print(
-            f'total time = {path[-1].get_timestep()}, time = {round(delta.total_seconds(), 4)}, states = {number_of_states}, total_obstacles = '
-            f'{total_obstacles}, \n unaccessible_edges={unaccessible_edges}, relaxed_edges={relaxed_edges}, '
+            f'total time = {path[-1].get_timestep()}, path length = {len(path)}, time = {round(delta.total_seconds(), 4)} \n'
+            f'total states = {number_of_states}, number of relaxed edges={relaxed_edges} \n'
+            f'unaccessible/total met obstacles = {unaccessible_edges}/{total_obstacles} \n'            
             f'path = {path}')
-        path_and_obstacle_save_to_json(obstacle_list, nodes_with_coordinates, path, str_append_to_file_name+today_str)
-        save_to_file(map_info['old_nodes'], path, 'path_' + str(from_node) + '_' + str(to_node) +
-                     str_append_to_file_name + heuristic_type + '_' + today_str)
+        # path_and_obstacle_save_to_json(obstacle_list, nodes_with_coordinates, path, str_append_to_file_name+today_str)
+        # save_to_file(map_info['old_nodes'], path, 'path_' + str(from_node) + '_' + str(to_node) +
+        #              str_append_to_file_name + heuristic_type + '_' + today_str)

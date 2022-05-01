@@ -21,6 +21,9 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return
     if heuristic_type == 'astar':
         graph.set_heuristic_type('astar')
         print(f'graph.heuristic_type={graph.get_heuristic_type()}')
+    elif heuristic_type == 'landmark':
+        graph.set_heuristic_type('landmark')
+        print(f'graph.heuristic_type={graph.get_heuristic_type()}')
     else:
         print(f'graph.heuristic_type={graph.get_heuristic_type()}')
 
