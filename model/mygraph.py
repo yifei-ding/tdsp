@@ -71,7 +71,7 @@ class MyGraphWithAdjacencyList(object):
             return utils.haversine(coord1=self.nodes_with_coordinates[u], coord2=self.nodes_with_coordinates[v])
         elif self.heuristic_type == 'landmark':
             max_value = 0
-            for i in range(0, 4):
+            for i in range(0, 24):
                 max_value = max(abs(self.landmark[i][u] - self.landmark[i][v]), max_value)
             return max_value
         else:

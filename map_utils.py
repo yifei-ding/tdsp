@@ -88,7 +88,8 @@ def create_weight_dict(edges, nodes_with_coordinates):
 
 # precompute distances between all landmark and all nodes
 def get_distances_to_landmarks(landmarks, nodes_with_coordinates):
-    result = {0: {}, 1: {}, 2: {}, 3: {}} # initialize empty dict for 4 landmarks
+    result_size = len(landmarks)
+    result = {k:{} for k in range(result_size)}
     for i, landmark in enumerate(landmarks):
         for node_id in nodes_with_coordinates.keys():
             result[i][node_id] = utils.haversine(landmark, nodes_with_coordinates[node_id])
@@ -111,8 +112,12 @@ if __name__ == "__main__":
     nodes_new, nodes_with_coordinates, weights = map_info['nodes'], map_info['coordinates'], map_info['weights']
     # a = list(nodes_with_coordinates.values()).index((0.0, 0.5))
     # print(a)
-    landmarks = [(90.0, 30.5), (90.0, -30.5), (-90.0, 30.5), (-90.0, -30.5)]
+    landmarks = [(90.0, 78.5), (90.0, -78.5), (-90.0, 78.5), (-90.0, -78.5),(180.0, 78.5), (180.0, -78.5),
+                 (45.0, 78.5), (45.0, -78.5), (-45.0, 78.5), (-45.0, -78.5),(0.0, 78.5), (0.0, -78.5),
+                 (90.0, 36.5), (90.0, -36.5), (-90.0, 36.5), (-90.0, -36.5), (180.0, 36.5), (180.0, -36.5),
+                 (45.0, 36.5), (45.0, -36.5), (-45.0, 36.5), (-45.0, -36.5), (0.0, 36.5), (0.0, -36.5),
+                 ]
     landmarks_distances = get_distances_to_landmarks(landmarks, nodes_with_coordinates)
     map_info['landmarks'] = landmarks
     map_info['landmarks_distances'] = landmarks_distances
-    pickle.dump(map_info, open("data/map2_with_landmarks.p", "wb"))
+    pickle.dump(map_info, open("data/map2_with_landmarks_4.p", "wb"))
