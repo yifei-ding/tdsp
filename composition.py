@@ -1,4 +1,6 @@
 import copy
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Formula(object):
@@ -61,9 +63,9 @@ def formula_parser(function_str, weight):
         return Formula(coefficient, weight, 0)
 
 
-def calculate_function_reverse(function, weight, current_time):
-    coefficient = float(''.join(function[1:]))
-    return current_time - weight * coefficient
+# def calculate_function_reverse(function, weight, current_time):
+#     coefficient = float(''.join(function[1:]))
+#     return current_time - weight * coefficient
 
 
 def merge(a, b):
@@ -72,25 +74,35 @@ def merge(a, b):
     i = 0
     for key in sorted(a.keys()):
         # calculate y at interval boarders
-        print(f'key={key}')
+        print('-------------------------------------')
+
+        print(f'a x range={key}')
         start_time = key[0]
         end_time = key[1]
         a_start = a[key].eval(start_time)
         a_end = a[key].eval(end_time)
-        print(f'a_start={a_start}, a_end={a_end}')
+        print('Outer loop')
+        print(f'a y range=({a_start}, {a_end})')
 
         while i < len(keys_list_b):
             # find y1 y2 (a_start, a_end) falls into which interval of b
             b_start = keys_list_b[i][0]
             b_end = keys_list_b[i][1]
-            print(f'b_start={b_start},b_end={b_end}')
-            if b_start <= a_start < b_end < a_end:
+            print('Inner loop')
+
+            print(f'b range= ({b_start}, {b_end})')
+            if b_start <= a_start < b_end <= a_end:
+                # TODO: double check
                 print(1)
-                new_interval = (start_time, a[key].eval_reverse(b_end))
+                new_interval = (a[key].eval_reverse(a_start), a[key].eval_reverse(b_end))
                 result[new_interval] = a[key].compose(b[keys_list_b[i]])
-                start_time = a[key].eval_reverse(b_end)  # TODO: verify
-                # consume current interval and go to next b
                 i += 1
+                if a_end == b_end:
+                    print('break')
+                    break
+
+                a_start = b_end
+                print(f'a y range= ({a_start}, {a_end})')
             elif a_start <= b_start and a_end > b_end:
                 print(2)
                 # consume current interval and go to next b
@@ -105,9 +117,28 @@ def merge(a, b):
                 new_interval = (start_time, end_time)
                 result[new_interval] = a[key].compose(b[keys_list_b[i]])
                 break
-            else:
+            elif a_start >= b_end:
                 print(5)
+                print('skip')
+                i += 1
+            else:
+                print(6)
+                print('didnt find mach pattern')
                 break
+
+        # after used all b intervals, check if a has remaining
+        # compose the remaining of a with the last interval of b
+        if i == len(keys_list_b) and a_start <= a_end:
+            print('****', a_start, a_end)
+            if (a_start < a_end):
+                new_interval = (a[key].eval_reverse(a_start), a[key].eval_reverse(a_end))
+            else:
+                new_interval = (start_time, end_time)
+
+            result[new_interval] = a[key].compose(b[keys_list_b[i - 1]])
+            print('Add new interval:', new_interval)
+
+    # TODO: if there are consecutive intervals that has same formula, merge the two
 
     return result
 
@@ -148,19 +179,86 @@ def fifo(a):
     return result
 
 
+def show_plot_before_and_after_fifo(a, a_prime):
+    y1 = np.array([])
+    y2 = np.array([])
+    end_of_linespace = 0
+    for k in sorted(a.keys()):
+        v = a[k]
+        print(k, v)
+        new = np.linspace(v.eval(k[0]), v.eval(k[1] - 1), k[1] - k[0])
+        y1 = np.append(y1, new)
+        end_of_linespace = max(end_of_linespace, k[1])
+    for k in sorted(a_prime.keys()):
+        v = a_prime[k]
+        print(k, v)
+        new = np.linspace(v.eval(k[0]), v.eval(k[1] - 1), k[1] - k[0])
+        y2 = np.append(y2, new)
+    x = np.linspace(0, end_of_linespace, end_of_linespace)
+    plt.figure(figsize=(6,5))
+    l = plt.plot(x, y1, 'b', label='original')
+    l2 = plt.plot(x, y2, 'g', label='FIFO')
+    plt.legend()
+    plt.show()
+
+
+def show_plot(a, b):
+    y1 = np.array([])
+    y2 = np.array([])
+    start_of_linespace = 0
+    end_of_linespace = 0
+    end_of_linespace_y2 = 0
+    for k in sorted(a.keys()):
+        v = a[k]
+        new = np.linspace(v.eval(k[0]), v.eval(k[1] - 1), k[1] - k[0])
+        y1 = np.append(y1, new)
+        end_of_linespace = max(end_of_linespace, k[1])
+    for k in sorted(b.keys()):
+        v = b[k]
+        new = np.linspace(v.eval(k[0]), v.eval(k[1] - 1), k[1] - k[0])
+        y2 = np.append(y2, new)
+        end_of_linespace_y2 = max(end_of_linespace_y2, k[1])
+
+    plt.subplot(211)
+    x = np.linspace(start_of_linespace, end_of_linespace, end_of_linespace)
+    plt.plot(x, y1, 'b', label='a to b')
+    plt.legend()
+
+    plt.subplot(212)
+    x = np.linspace(start_of_linespace, end_of_linespace_y2, end_of_linespace_y2)
+    plt.plot(x, y2, 'b', label='b to a')
+    plt.legend()
+    plt.show()
+
+
 if __name__ == "__main__":
-    a = {(0, 20): "t+1", (20, 30): "t+1.2", (30, 40): "t+1"}
-    b = {(0, 40): "t+1", (40, 100): "t+1.2"}
+    # a = {(0, 10): "t+1", (10, 30): "t+50", (30, 50): "t+1"}
+    # b = {(0, 20): "t+1", (20, 40): "t+1.5", (40, 50): "t+1"}
+    # weight_a = 10
+    # weight_b = 10
+    # for k, v in a.items():
+    #     a[k] = formula_parser(v, weight_a)
+    # for k, v in b.items():
+    #     b[k] = formula_parser(v, weight_b)
+    #
+    # a_prime = fifo(a)
+    # b_prime = fifo(b)
+    # print(f'After fifo: a={a_prime} \n'
+    #
+    #       f'b={b_prime}')
+    # result = merge(b_prime, a_prime)
+    # print(result)
+    # show_plot_before_and_after_fifo(a, a_prime)
+    # show_plot_before_and_after_fifo(b, b_prime)
+    # show_plot(merge(a_prime, b_prime), merge(b_prime, a_prime))
+
+    # example
+    a = {(0, 25): "t+1", (25, 50): "t+0.5"}
     weight_a = 10
-    weight_b = 10
     for k, v in a.items():
         a[k] = formula_parser(v, weight_a)
-    for k, v in b.items():
-        b[k] = formula_parser(v, weight_b)
+    a_prime = fifo(a)
+    show_plot_before_and_after_fifo(a, a_prime)
 
-    a = fifo(a)
-    b = fifo(b)
-    print(f'After fifo: a={a} \n'
-           f'b={b}')
-    result = merge(a,b)
-    print(result)
+
+
