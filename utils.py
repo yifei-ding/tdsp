@@ -1,3 +1,11 @@
+def octile(coord1,coord2):
+    x1, y1 = coord1
+    x2, y2 = coord2
+    delta_x = abs(x1 - x2)
+    delta_y = abs(y1 - y2)
+    octile = 1.414 * min(delta_x, delta_y) + abs(delta_x - delta_y)
+    return octile
+
 def haversine(coord1, coord2):
     """the Great-circle distance """
     import math

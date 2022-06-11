@@ -218,17 +218,17 @@ if __name__ == "__main__":
         f.close()
         # add obstacles to graph
         obstacle_list = []
-        # for item in obstacles:
-        #     start = item['obstacle_start_node']
-        #     end = item['obstacle_end_node']
-        #     start_time = item['obstacle_start_time']
-        #     end_time = item['obstacle_end_time']
-        #     radius = item['obstacle_radius'] * 111 * 1000
-        #     coefficient = item['obstacle_coefficient']
-        #     obstacle1 = Obstacle(radius, start[0], start[1],
-        #                          end[0], end[1], start_time, end_time, coefficient)
-        #     obstacle_list.append(obstacle1)
-        # g_2.add_obstacle_by_list(obstacle_list)
+        for item in obstacles:
+            start = item['obstacle_start_node']
+            end = item['obstacle_end_node']
+            start_time = item['obstacle_start_time']
+            end_time = item['obstacle_end_time']
+            radius = item['obstacle_radius'] * 111 * 1000
+            coefficient = item['obstacle_coefficient']
+            obstacle1 = Obstacle(radius, start[0], start[1],
+                                 end[0], end[1], start_time, end_time, coefficient)
+            obstacle_list.append(obstacle1)
+        g_2.add_obstacle_by_list(obstacle_list)
 
         # get query start and end node
         from_coord = tuple(start_node)
@@ -239,7 +239,7 @@ if __name__ == "__main__":
         # do query
         start_time = datetime.datetime.now()
         path, number_of_states, total_obstacles, unaccessible_edges, explored, relaxed_edges = \
-            run_dijkstra_and_return_all(g_2, from_node, to_node, 0, heuristic_type='landmark')
+            run_dijkstra_and_return_all(g_2, from_node, to_node, 0, heuristic_type='octile')
         end_time = datetime.datetime.now()
         delta = end_time - start_time
 
@@ -259,7 +259,9 @@ if __name__ == "__main__":
             temp_str += f'[node = {nodes_with_coordinates[item.get_node()]}, time = {item.get_timestep()}], '
         print(temp_str)
 
+        # fow showing search space, path, and obstacle on Google map sample
         search_space_save_to_json(nodes_with_coordinates, explored, 'search_space')
-
         path_and_obstacle_save_to_json(obstacle_list, nodes_with_coordinates, path, str_append_to_file_name + today_str)
+
+        # for showing in QGIS
         save_to_file(map_info['old_nodes'], path, str_append_to_file_name + today_str)

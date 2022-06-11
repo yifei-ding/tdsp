@@ -4,7 +4,9 @@ Created on Tue Mar  8 11:59:14 2022
 
 @author: yifei
 """
+import typing
 
+import utils
 from heapq_modified import *
 from model.State import State
 
@@ -20,12 +22,12 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return
     speed = 1000 * 10
     if heuristic_type == 'astar':
         graph.set_heuristic_type('astar')
-        print(f'graph.heuristic_type={graph.get_heuristic_type()}')
     elif heuristic_type == 'landmark':
         graph.set_heuristic_type('landmark')
-        print(f'graph.heuristic_type={graph.get_heuristic_type()}')
-    else:
-        print(f'graph.heuristic_type={graph.get_heuristic_type()}')
+    elif heuristic_type == 'octile':
+        graph.set_heuristic_type('octile')
+
+    print(f'graph.heuristic_type={graph.get_heuristic_type()}')
 
     initial_state = State(start_vertex, start_time, 0, None, end_vertex)
     # hq = []
@@ -64,13 +66,19 @@ def dijkstra(graph, start_vertex, end_vertex, start_time, heuristic_type, return
                 # distance = graph.get_weight(current_vertex, neighbour.get_node())
                 # new_distance = current_state.get_g() + distance
                 # 0321 replace with time-dependent weight
-                distance = graph.get_time_dependent_weight(current_vertex, neighbour.get_node(), current_timestep)
-                new_distance = current_state.get_g() + distance
+                cost, distance = graph.get_time_dependent_weight(current_vertex, neighbour.get_node(), current_timestep)
+                new_cost = current_state.get_g() + cost
                 previous_cost = neighbour.get_g()
 
-                if new_distance < previous_cost:
+                if new_cost < previous_cost:
                     new_timestep = current_timestep + distance // speed
-                    neighbour.set_g(new_distance)
+
+                    # if graph.get_heuristic_type() == 'octile':
+                    #     coord1 = graph.nodes_with_coordinates[current_vertex]
+                    #     coord2 = graph.nodes_with_coordinates[neighbour.get_node()]
+                    #     neighbour.set_g(utils.octile(coord1, coord2))
+                    # else:
+                    neighbour.set_g(new_cost)
                     neighbour.set_timestep(new_timestep)
                     neighbour.set_parent(current_state)
                     neighbour.set_h(graph.get_heuristic(neighbour.get_node(), end_vertex))

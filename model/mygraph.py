@@ -69,6 +69,10 @@ class MyGraphWithAdjacencyList(object):
     def get_heuristic(self, u, v):
         if self.heuristic_type == 'astar':
             return utils.haversine(coord1=self.nodes_with_coordinates[u], coord2=self.nodes_with_coordinates[v])
+        elif self.heuristic_type == 'octile':
+            coord1 = self.nodes_with_coordinates[u]
+            coord2 = self.nodes_with_coordinates[v]
+            return utils.octile(coord1, coord2)
         elif self.heuristic_type == 'landmark':
             max_value = 0
             for i in range(0, 24):
@@ -93,13 +97,18 @@ class MyGraphWithAdjacencyList(object):
         if result == 9999:
             self.number_of_unaccessible_obstacles_met += 1
             return None
+        elif self.heuristic_type == 'octile':
+            # return two things. First is time-dependent g, second is time-dependent-distance
+            return result * utils.octile(self.nodes_with_coordinates[u], self.nodes_with_coordinates[v]), result * self.get_weight(u, v)
         else:
-            return result * self.get_weight(u, v)
+            return result * self.get_weight(u, v), result * self.get_weight(u, v)
+
+
 
     def cross(self, u, v, obstacle, t):
         """To check if an obstacle is overlapping/crossing the edge(u,v) at timestep t"""
         # TODO: to find a distance between a point and a curve on the sphere
-        if obstacle.get_obstacle_location(t):  # if 
+        if obstacle.get_obstacle_location(t):  # if
             x0, y0 = obstacle.get_obstacle_location(t)
             x1, y1 = self.nodes_with_coordinates[u]
             x2, y2 = self.nodes_with_coordinates[v]

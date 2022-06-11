@@ -86,7 +86,7 @@ def create_weight_dict(edges, nodes_with_coordinates):
     return result
 
 
-# precompute distances between all landmark and all nodes
+# precompute distances between all landmark and all nodes TODO: replace with static Dijkstra
 def get_distances_to_landmarks(landmarks, nodes_with_coordinates):
     result_size = len(landmarks)
     result = {k:{} for k in range(result_size)}
@@ -108,16 +108,16 @@ if __name__ == "__main__":
     # # save
     # pickle.dump(dicts, open("data/map2.p", "wb"))
 
-    map_info = pickle.load(open("data/map2.p", "rb"))
+    map_info = pickle.load(open("data/map.p", "rb"))
     nodes_new, nodes_with_coordinates, weights = map_info['nodes'], map_info['coordinates'], map_info['weights']
     # a = list(nodes_with_coordinates.values()).index((0.0, 0.5))
     # print(a)
-    landmarks = [(90.0, 78.5), (90.0, -78.5), (-90.0, 78.5), (-90.0, -78.5),(180.0, 78.5), (180.0, -78.5),
-                 (45.0, 78.5), (45.0, -78.5), (-45.0, 78.5), (-45.0, -78.5),(0.0, 78.5), (0.0, -78.5),
-                 (90.0, 36.5), (90.0, -36.5), (-90.0, 36.5), (-90.0, -36.5), (180.0, 36.5), (180.0, -36.5),
-                 (45.0, 36.5), (45.0, -36.5), (-45.0, 36.5), (-45.0, -36.5), (0.0, 36.5), (0.0, -36.5),
-                 ]
-    landmarks_distances = get_distances_to_landmarks(landmarks, nodes_with_coordinates)
-    map_info['landmarks'] = landmarks
-    map_info['landmarks_distances'] = landmarks_distances
-    pickle.dump(map_info, open("data/map2_with_landmarks_4.p", "wb"))
+    # landmarks = [(90.0, 78.5), (90.0, -78.5), (-90.0, 78.5), (-90.0, -78.5),(180.0, 78.5), (180.0, -78.5),
+    #              (45.0, 78.5), (45.0, -78.5), (-45.0, 78.5), (-45.0, -78.5),(0.0, 78.5), (0.0, -78.5),
+    #              (90.0, 36.5), (90.0, -36.5), (-90.0, 36.5), (-90.0, -36.5), (180.0, 36.5), (180.0, -36.5),
+    #              (45.0, 36.5), (45.0, -36.5), (-45.0, 36.5), (-45.0, -36.5), (0.0, 36.5), (0.0, -36.5),
+    #              ]
+    # landmarks_distances = get_distances_to_landmarks(landmarks, nodes_with_coordinates)
+    # map_info['landmarks'] = landmarks
+    # map_info['landmarks_distances'] = landmarks_distances
+    # pickle.dump(map_info, open("data/map2_with_landmarks_4.p", "wb"))

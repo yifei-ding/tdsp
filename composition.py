@@ -232,33 +232,33 @@ def show_plot(a, b):
 
 
 if __name__ == "__main__":
-    # a = {(0, 10): "t+1", (10, 30): "t+50", (30, 50): "t+1"}
-    # b = {(0, 20): "t+1", (20, 40): "t+1.5", (40, 50): "t+1"}
-    # weight_a = 10
-    # weight_b = 10
-    # for k, v in a.items():
-    #     a[k] = formula_parser(v, weight_a)
-    # for k, v in b.items():
-    #     b[k] = formula_parser(v, weight_b)
-    #
-    # a_prime = fifo(a)
-    # b_prime = fifo(b)
-    # print(f'After fifo: a={a_prime} \n'
-    #
-    #       f'b={b_prime}')
-    # result = merge(b_prime, a_prime)
-    # print(result)
-    # show_plot_before_and_after_fifo(a, a_prime)
-    # show_plot_before_and_after_fifo(b, b_prime)
-    # show_plot(merge(a_prime, b_prime), merge(b_prime, a_prime))
-
-    # example
-    a = {(0, 25): "t+1", (25, 50): "t+0.5"}
+    a = {(0, 10): "t+1", (10, 30): "t+50", (30, 50): "t+1"}
+    b = {(0, 20): "t+1", (20, 40): "t+1.5", (40, 50): "t+1"}
     weight_a = 10
+    weight_b = 10
     for k, v in a.items():
         a[k] = formula_parser(v, weight_a)
-    a_prime = fifo(a)
-    show_plot_before_and_after_fifo(a, a_prime)
+    for k, v in b.items():
+        b[k] = formula_parser(v, weight_b)
 
+    a_prime = fifo(a)
+    b_prime = fifo(b)
+    print(f'After fifo: a={a_prime} \n'
+
+          f'b={b_prime}')
+    result = merge(b_prime, a_prime)
+    print(result)
+    # show_plot_before_and_after_fifo(a, a_prime)
+    # show_plot_before_and_after_fifo(b, b_prime)
+    show_plot(merge(a_prime, b_prime), merge(b_prime, a_prime))
+
+    # example
+    # a = {(0, 25): "t+1", (25, 50): "t+0.5"}
+    # weight_a = 10
+    # for k, v in a.items():
+    #     a[k] = formula_parser(v, weight_a)
+    # a_prime = fifo(a)
+    # show_plot_before_and_after_fifo(a, a_prime)
+    #
 
 

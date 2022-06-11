@@ -1,12 +1,12 @@
 {
-  "start_node": [50.0, 0.5],
-  "end_node": [100.0, 60.5],
+  "start_node": [50.0, 60.5],
+  "end_node": [100.0, 0.5],
   "obstacles": [
     {
       "obstacle_start_node":[50.0, 13.5],
       "obstacle_end_node": [50.0, 16.5],
-      "obstacle_start_time": 500,
-      "obstacle_end_time": 600,
+      "obstacle_start_time": 155,
+      "obstacle_end_time": 200,
       "obstacle_radius": 5,
       "obstacle_coefficient": 9999
     }
