@@ -250,7 +250,7 @@ if __name__ == "__main__":
     print(result)
     # show_plot_before_and_after_fifo(a, a_prime)
     # show_plot_before_and_after_fifo(b, b_prime)
-    show_plot(merge(a_prime, b_prime), merge(b_prime, a_prime))
+    # show_plot(merge(a_prime, b_prime), merge(b_prime, a_prime))
 
     # example
     # a = {(0, 25): "t+1", (25, 50): "t+0.5"}
